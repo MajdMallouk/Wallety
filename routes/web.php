@@ -10,8 +10,7 @@ use App\Models\Transaction;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('welcome');
-Route::middleware(['auth'])->get('/profile-complete',
-    [ProfileController::class, 'completeProfile'])->name('profile.complete');
+Route::middleware(['auth'])->get('/profile-complete', [ProfileController::class, 'completeProfile'])->name('profile.complete');
 Route::post('/profile/complete', [ProfileController::class, 'submitCompletion'])->name('profile.complete.submit');
 
 Route::middleware(['auth', 'check.profile'])->group(function () {
