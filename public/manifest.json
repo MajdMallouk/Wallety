@@ -1,0 +1,21 @@
+{
+    "name": "Wallety - Money Transactions",
+    "short_name": "Wallety",
+    "start_url": "/tests/pay/public/?source=pwa",
+    "scope": "/tests/pay/public/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#4A5568",
+    "icons": [
+        {
+            "src": "/tests/pay/public/img/icons/main-icon-x1.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/tests/pay/public/img/icons/main-icon-x4.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
