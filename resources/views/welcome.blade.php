@@ -84,7 +84,6 @@
             muted
             loop
             playsinline
-            poster="{{ asset('img/background-poster.jpg') }}"
             preload="metadata"
         >
             <source src="{{ asset('img/backgroundVideo.mp4') }}" type="video/mp4">
