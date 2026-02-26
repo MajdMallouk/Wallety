@@ -7,121 +7,145 @@ use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
 use Exception;
-use Illuminate\Http\Exceptions\ThrottleRequestsException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
 
 class TransactionController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         $user = auth()->user();
-        $transactions = Transaction::with(['user', 'receiver', 'currency'])
-            ->where(function ($query) use ($user) {
-                $query->where('user_id', $user->id)
-                    ->orWhere('receiver_id', $user->id);
-            })
+        $transactions = Transaction::query()
+            ->with(['user', 'receiver', 'currency'])
+            ->relatedToUser($user)
             ->latest()
             ->cursorPaginate(10);
 
         return view('transactions.index', compact('transactions'));
     }
 
-    public function create()
+    public function create(): View
     {
         $user = auth()->user()->load('wallets.currency');
+
         return view('transactions.create', compact('user'));
     }
 
-    public function store(TransactionRequest $request)
+    public function store(TransactionRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        $normalized = Str::lower($data['receiver_id']);
+        $normalizedReceiver = Str::lower(trim((string) $data['receiver_id']));
         $sender = $request->user();
 
-        // Fetch recipient
         try {
-            $recipient = User::where('email', $normalized)
-                ->orWhere('username', $normalized)
+            $recipient = User::query()
+                ->where('email', $normalizedReceiver)
+                ->orWhere('username', $normalizedReceiver)
                 ->firstOrFail();
-        } catch (ModelNotFoundException $e) {
+        } catch (ModelNotFoundException) {
             return back()
                 ->withInput()
                 ->withErrors(['error' => 'Recipient not found.']);
         }
 
-        // Prevent self-transfer
         if ($recipient->id === $sender->id) {
             return back()
                 ->withInput()
-                ->withErrors(['error' => "You can't send money to yourself"]);
+                ->withErrors(['error' => 'You can\'t send money to yourself']);
         }
 
-        // Rate limiting
-        $key = 'transactions:' . $sender->id;
+        $key = "transactions:{$sender->id}";
         if (RateLimiter::tooManyAttempts($key, 5)) {
             $seconds = RateLimiter::availableIn($key);
+
             return back()
                 ->withInput()
                 ->withErrors([
-                    'rate_limit' => "Too many attempts. Please try again in {$seconds} seconds."
+                    'rate_limit' => "Too many attempts. Please try again in {$seconds} seconds.",
                 ]);
         }
+
         RateLimiter::hit($key);
 
         try {
-            DB::transaction(function() use ($data, $sender, $recipient) {
-                $senderWallet = Wallet::where('id', $data['wallet_id'])
+            $amount = (float) $data['amount'];
+            DB::transaction(function () use ($amount, $data, $sender, $recipient): void {
+                $senderWallet = Wallet::query()
+                    ->where('id', $data['wallet_id'])
                     ->where('user_id', $sender->id)
+                    ->lockForUpdate()
                     ->firstOrFail();
 
-                $recipientWallet = Wallet::firstOrCreate(
-                    [
-                        'user_id'     => $recipient->id,
-                        'currency_id' => $senderWallet->currency_id,
-                    ],
-                    ['balance' => 0]
+                $recipientWallet = Wallet::query()->firstOrCreate(
+                    ['user_id' => $recipient->id, 'currency_id' => $senderWallet->currency_id],
+                    ['balance' => 0],
                 );
+                $recipientWallet = Wallet::query()
+                    ->whereKey($recipientWallet->id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-                if ($senderWallet->balance < $data['amount']) {
-                    throw new \Exception('Insufficient balance');
+                if ((float) $senderWallet->balance < $amount) {
+                    throw new Exception('Insufficient balance.');
                 }
 
-                $senderWallet->decrement('balance', $data['amount']);
-                $recipientWallet->increment('balance', $data['amount']);
+                $senderWallet->decrement('balance', $amount);
+                $recipientWallet->increment('balance', $amount);
 
                 Transaction::create([
-                    'user_id'     => $sender->id,
+                    'user_id' => $sender->id,
                     'receiver_id' => $recipient->id,
-                    'amount'      => $data['amount'],
-                    'message'     => $data['message'] ?? null,
-                    'status'      => 'paid',
+                    'amount' => $amount,
+                    'message' => $data['message'] ?? null,
+                    'status' => 'paid',
                     'currency_id' => $senderWallet->currency_id,
-                    'wallet_id'   => $senderWallet->id,
+                    'wallet_id' => $senderWallet->id,
                 ]);
             });
 
             return redirect()
                 ->route('dashboard')
                 ->with('success', 'Money sent!');
-
         } catch (Exception $e) {
-            return back()->withInput()->withErrors(['error' => 'Transaction failed: ' . $e->getMessage()]);
+            Log::error('Transaction failed', [
+                'sender_id' => $sender->id,
+                'receiver' => $normalizedReceiver,
+                'wallet_id' => $data['wallet_id'],
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Transaction failed. Please try again.']);
         }
     }
 
-    public function show(Transaction $transaction)
+    public function show(Transaction $transaction): View
     {
+        abort_unless($transaction->isOwnedByUser(auth()->id()), 403);
+        $transaction->loadMissing(['user', 'receiver', 'currency']);
+
         return view('transactions.show', compact('transaction'));
     }
-    public function createForUser(User $recipient)
+
+    public function createForUser(User $recipient): View|RedirectResponse
     {
+        if ($recipient->id === auth()->id()) {
+            return redirect()
+                ->route('transactions.create')
+                ->withErrors(['error' => 'You can\'t send money to yourself']);
+        }
+
         $sender = auth()->user()->load('wallets.currency');
+
         return view('transactions.create', [
             'recipient' => $recipient,
-            'sender'    => $sender,
+            'sender' => $sender,
         ]);
     }
-
 }

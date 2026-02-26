@@ -7,6 +7,7 @@ use App\Http\Controllers\RechargeController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\QrController;
 use App\Models\Transaction;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('welcome');
@@ -17,12 +18,11 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
 
     Route::get('/dashboard', function () {
         $user = Auth::user()->load('wallets.currency');
-        $transactions = Transaction::with(['user', 'receiver', 'currency'])
-            ->where(function ($query) use ($user) {
-                $query->where('user_id', $user->id)
-                    ->orWhere('receiver_id', $user->id);
-            })
+        $transactions = Transaction::query()
+            ->with(['user', 'receiver', 'currency'])
+            ->relatedToUser($user)
             ->latest()
+            ->limit(10)
             ->get();
 
         return view('dashboard')->with(['transactions' => $transactions]);

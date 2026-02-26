@@ -6,31 +6,35 @@ use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class TransactionRequest extends FormRequest
 {
-    protected function prepareForValidation(): void
-    {
-        // merge current user’s id into the incoming data
-        $this->merge([
-            'user_id' => $this->user()->id,
-        ]);
-    }
-
     public function rules(): array
     {
         return [
-            'wallet_id'   => ['required', 'exists:wallets,id'],
+            'wallet_id'   => [
+                'required',
+                Rule::exists('wallets', 'id')->where(fn ($query) => $query->where('user_id', $this->user()->id)),
+            ],
             'receiver_id' => [
                 'required',
+                'string',
+                'max:255',
                 function ($attribute, $value, $fail) {
-                    $normalized = Str::lower($value);
-                    $userExists = User::where('email', $normalized)
+                    $normalized = Str::lower(trim((string) $value));
+                    $recipient = User::where('email', $normalized)
                         ->orWhere('username', $normalized)
-                        ->exists();
+                        ->first();
 
-                    if (!$userExists) {
+                    if (! $recipient) {
                         $fail('The recipient username or email isn\'t registered.');
+
+                        return;
+                    }
+
+                    if ($recipient->id === $this->user()->id) {
+                        $fail('You can\'t send money to yourself.');
                     }
                 },
             ],
@@ -49,7 +53,7 @@ class TransactionRequest extends FormRequest
                     }
                 },
             ],
-            'message' => ['nullable','string'],
+            'message' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
@@ -60,9 +64,10 @@ class TransactionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'receiver_id.exists' => 'That recipient username or email isn’t registered.',
+            'wallet_id.exists' => 'Selected wallet is invalid.',
             'amount.min' => 'The minimum transfer amount is :min.',
             'amount.max' => 'The maximum transfer amount is :max.',
+            'message.max' => 'Message can\'t be longer than :max characters.',
         ];
     }
 

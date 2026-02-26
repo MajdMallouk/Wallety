@@ -9,12 +9,12 @@ return new class extends Migration {
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('user_id')->constrained('users')->onDelete('cascade');   //sender
-            $table->unsignedBigInteger('receiver_id')->constrained('users')->onDelete('cascade');
-            $table->integer('amount');
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete(); // sender
+            $table->foreignId('receiver_id')->constrained('users')->cascadeOnDelete();
+            $table->decimal('amount', 16, 8);
             $table->text('message')->nullable();
-            $table->unsignedInteger('currency_id')->constrained('currencies')->onDelete('cascade');
-            $table->unsignedInteger('wallet_id')->constrained('wallets')->onDelete('cascade');
+            $table->foreignId('currency_id')->constrained('currencies')->cascadeOnDelete();
+            $table->foreignId('wallet_id')->constrained('wallets')->cascadeOnDelete();
             $table->string('status')->default('waiting');
             $table->timestamps();
         });

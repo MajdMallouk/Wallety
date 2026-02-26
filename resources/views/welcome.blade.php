@@ -19,8 +19,15 @@
         <!-- Styles / Scripts -->
         @vite('resources/css/app.css')
         <link rel="stylesheet" href="{{ asset('style.css') }}">
+        <link rel="preload" as="image" href="{{ asset('img/15773.jpg') }}">
     </head>
-    <body class="bg-base-bgLight text-white" x-data="{open: false}">
+    <body class="bg-base-bgLight text-white landing-loading" x-data="{open: false}">
+    <div id="landingPreloader" class="landing-preloader" role="status" aria-live="polite" aria-label="Loading page">
+        <div class="landing-preloader__content">
+            <x-application-logo class="w-20 landing-preloader__logo"/>
+            <p class="landing-preloader__text">Loading {{ config('app.name') }}...</p>
+        </div>
+    </div>
     <x-section class="flex justify-between bg-base-dark">
         <div class="hidden lg:flex gap-8">
             <p><i class="far fa-envelope"></i> <a href="mailto:majdmallouk365@gmail.com" target="_blank">majdmallouk365@gmail.com</a></p>
@@ -77,18 +84,22 @@
             </div>
         </div>
 
-    <x-section class="relative w-full h-[60vh] lg:h-screen overflow-hidden">
+    <x-section id="hero" class="hero-section relative w-full h-[60vh] lg:h-screen overflow-hidden">
         <video
+            id="heroVideo"
             class="absolute inset-0 w-full h-full object-cover"
             autoplay
             muted
             loop
             playsinline
-            preload="metadata"
+            preload="none"
+            poster="{{ asset('img/15773.jpg') }}"
+            aria-hidden="true"
         >
-            <source src="{{ asset('img/backgroundVideo.mp4') }}" type="video/mp4">
+            <source data-src="{{ asset('img/backgroundVideo.mp4') }}" type="video/mp4">
             Your browser does not support HTML5 video.
         </video>
+        <div class="hero-overlay absolute inset-0"></div>
         <nav class="relative flex justify-between z-10">
             <a href="{{ route('welcome') }}" class="hidden lg:flex gap-2 items-center">
                 <x-application-logo class="w-16"/>
@@ -99,11 +110,11 @@
             </a>
             <div class="hidden lg:flex items-center gap-8">
                 <ul class="flex-none space-x-6">
-                    <a href="{{ route('welcome') }}" class="text-accent-400 underline">Home</a>
-                    <a href="#about">About</a>
-                    <a href="#services">Services</a>
-                    <a href="#features">Features</a>
-                    <a href="#other">Other</a>
+                    <li class="inline-block"><a href="{{ route('welcome') }}" class="text-accent-400 underline">Home</a></li>
+                    <li class="inline-block"><a href="#about">About</a></li>
+                    <li class="inline-block"><a href="#services">Services</a></li>
+                    <li class="inline-block"><a href="#features">Features</a></li>
+                    <li class="inline-block"><a href="#other">Other</a></li>
                 </ul>
                 <x-primary-link href="{{ route('login') }}">Login / Signup</x-primary-link>
             </div>
@@ -132,16 +143,16 @@
         <div class="flex flex-col lg:flex-row justify-around gap-4 items-center p-4">
             <h2 class="text-xl lg:text-2xl text-center">We have +50 strategical partners</h2>
             <div class="flex gap-2 lg:gap-4">
-                <img class="w-20 lg:w-36" src="{{ asset('img/Dell_Logo.png') }}" alt="Dell Logo">
-                <img class="w-20 lg:w-36" src="{{ asset('img/oxford.png') }}" alt="Oxford Logo">
-                <img class="w-20 lg:w-36" src="{{ asset('img/Dell_Logo.png') }}" alt="Dell Logo">
-                <img class="w-20 lg:w-36" src="{{ asset('img/oxford.png') }}" alt="Oxford Logo">
+                <img class="w-20 lg:w-36" src="{{ asset('img/Dell_Logo.png') }}" alt="Dell Logo" loading="lazy" decoding="async">
+                <img class="w-20 lg:w-36" src="{{ asset('img/oxford.png') }}" alt="Oxford Logo" loading="lazy" decoding="async">
+                <img class="w-20 lg:w-36" src="{{ asset('img/Dell_Logo.png') }}" alt="Dell Logo" loading="lazy" decoding="async">
+                <img class="w-20 lg:w-36" src="{{ asset('img/oxford.png') }}" alt="Oxford Logo" loading="lazy" decoding="async">
             </div>
         </div>
     </x-section>
     <x-section id="about" class="lg:grid lg:grid-cols-12 gap-12 my-10 lg:my-40 lg:!px-24 text-black">
         <div class="mb-6 lg:mb-0 lg:col-span-6">
-            <img class="rounded-3xl" src="{{ asset('img/15773.jpg') }}" alt="meeting">
+            <img class="rounded-3xl" src="{{ asset('img/15773.jpg') }}" alt="meeting" loading="lazy" decoding="async">
         </div>
         <div class="lg:col-span-6 flex flex-col justify-between gap-6">
             <div>
@@ -167,7 +178,7 @@
     <x-section id="services" class="relative bg-[#002046] pt-44 lg:pt-72 pb-32" x-data="{ shown: false }" x-intersect.threshold.100="shown = true">
         <div x-show="shown" x-transition>
             <div>
-                <img class="absolute top-0 lg:-top-32 left-0 w-full z-0 opacity-50 " src="{{ asset('img/curvey-lines-shape.svg') }}" alt="curvey lines shape">
+                <img class="absolute top-0 lg:-top-32 left-0 w-full z-0 opacity-50 " src="{{ asset('img/curvey-lines-shape.svg') }}" alt="curvey lines shape" loading="lazy" decoding="async">
             </div>
             <div class="relative z-10 space-y-20 flex flex-col justify-center items-center">
                 <div class="backdrop-blur-sm p-1 rounded-xl">
@@ -175,7 +186,7 @@
                 </div>
                 <div class="lg:grid lg:grid-cols-12 gap-12 space-y-8 lg:space-y-0">
                     <x-service-card>
-                        <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="">
+                        <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="" loading="lazy" decoding="async">
                         <h2 class="text-3xl font-semibold text-center mb-5">
                             The Ultimate Solution
                         </h2>
@@ -185,7 +196,7 @@
                         </p>
                     </x-service-card>
                     <x-service-card>
-                        <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="">
+                        <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="" loading="lazy" decoding="async">
                         <h2 class="text-3xl font-semibold text-center mb-5">
                             The Ultimate Solution
                         </h2>
@@ -195,7 +206,7 @@
                         </p>
                     </x-service-card>
                     <x-service-card>
-                        <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="">
+                        <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="" loading="lazy" decoding="async">
                         <h2 class="text-3xl font-semibold text-center mb-5">
                             The Ultimate Solution
                         </h2>
@@ -205,7 +216,7 @@
                         </p>
                     </x-service-card>
                     <x-service-card>
-                        <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="">
+                        <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="" loading="lazy" decoding="async">
                         <h2 class="text-3xl font-semibold text-center mb-5">
                             The Ultimate Solution
                         </h2>
@@ -215,7 +226,7 @@
                         </p>
                     </x-service-card>
                     <x-service-card>
-                        <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="">
+                        <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="" loading="lazy" decoding="async">
                         <h2 class="text-3xl font-semibold text-center mb-5">
                             The Ultimate Solution
                         </h2>
@@ -225,7 +236,7 @@
                         </p>
                     </x-service-card>
                     <x-service-card>
-                        <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="">
+                        <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="" loading="lazy" decoding="async">
                         <h2 class="text-3xl font-semibold text-center mb-5">
                             The Ultimate Solution
                         </h2>
@@ -247,7 +258,7 @@
         </div>
         <div class="lg:px-48 lg:grid lg:grid-cols-12 gap-6">
             <div class="lg:col-span-4 flex flex-col justify-between p-8 shadow-md !bg-gray-50">
-                    <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="">
+                    <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="" loading="lazy" decoding="async">
                     <h2 class="text-3xl font-semibold text-center mb-5">
                         The Ultimate Solution
                     </h2>
@@ -258,7 +269,7 @@
             </div>
 
             <div class="lg:col-span-4 flex flex-col justify-between p-8 shadow-md !bg-gray-50">
-                    <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="">
+                    <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="" loading="lazy" decoding="async">
                     <h2 class="text-3xl font-semibold text-center mb-5">
                         The Ultimate Solution
                     </h2>
@@ -269,7 +280,7 @@
             </div>
 
             <div class="lg:col-span-4 flex flex-col justify-between p-8 shadow-md !bg-gray-50">
-                    <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="">
+                    <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="" loading="lazy" decoding="async">
                     <h2 class="text-3xl font-semibold text-center mb-5">
                         The Ultimate Solution
                     </h2>
@@ -280,7 +291,7 @@
             </div>
 
             <div class="lg:col-span-4 flex flex-col justify-between p-8 shadow-md !bg-gray-50">
-                    <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="">
+                    <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="" loading="lazy" decoding="async">
                     <h2 class="text-3xl font-semibold text-center mb-5">
                         The Ultimate Solution
                     </h2>
@@ -291,7 +302,7 @@
             </div>
 
             <div class="lg:col-span-4 flex flex-col justify-between p-8 shadow-md !bg-gray-50">
-                    <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="">
+                    <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="" loading="lazy" decoding="async">
                     <h2 class="text-3xl font-semibold text-center mb-5">
                         The Ultimate Solution
                     </h2>
@@ -302,7 +313,7 @@
             </div>
 
             <div class="lg:col-span-4 flex flex-col justify-between p-8 shadow-md !bg-gray-50">
-                    <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="">
+                    <img class="mx-auto" src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="" loading="lazy" decoding="async">
                     <h2 class="text-3xl font-semibold text-center mb-5">
                         The Ultimate Solution
                     </h2>
@@ -316,7 +327,7 @@
     <x-section id="other" class="dealWithTrustSection relative bg-[#002046] pb-16">
         <div class="lg:grid lg:grid-cols-12 gap-24 lg:px-48 pt-72 pb-32">
             <div class="lg:col-span-6 mb-6 lg:mb-0">
-                <img class="w-full rounded-xl" src="{{ asset('img/deal-with-trust.jpg') }}" alt="deal with trust">
+                <img class="w-full rounded-xl" src="{{ asset('img/deal-with-trust.jpg') }}" alt="deal with trust" loading="lazy" decoding="async">
             </div>
             <div class="lg:col-span-6 flex flex-col justify-center gap-6">
                 <h2 class="text-5xl font-semibold">Deal With Trust</h2>
@@ -327,7 +338,7 @@
         </div>
         <div class="lg:grid lg:grid-cols-12">
             <div class="lg:col-span-4 flex flex-col justify-between p-8">
-                <img src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="">
+                <img src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="" loading="lazy" decoding="async">
                 <h2 class="text-3xl font-semibold mb-5">
                     The Ultimate Solution
                 </h2>
@@ -338,7 +349,7 @@
             </div>
 
             <div class="lg:col-span-4 flex flex-col justify-between p-8">
-                <img src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="">
+                <img src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="" loading="lazy" decoding="async">
                 <h2 class="text-3xl font-semibold mb-5">
                     The Ultimate Solution
                 </h2>
@@ -349,7 +360,7 @@
             </div>
 
             <div class="lg:col-span-4 flex flex-col justify-between p-8">
-                <img src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="">
+                <img src="{{ asset('img/icons/wallet-46.svg') }}" width="75px" alt="" loading="lazy" decoding="async">
                 <h2 class="text-3xl font-semibold mb-5">
                     The Ultimate Solution
                 </h2>
@@ -442,5 +453,60 @@
         @if (Route::has('login'))
             <div class="h-14.5 hidden lg:block"></div>
         @endif
+        <script>
+            (() => {
+                const preloader = document.getElementById('landingPreloader');
+                const heroVideo = document.getElementById('heroVideo');
+                const heroSection = document.getElementById('hero');
+                const videoSource = heroVideo?.querySelector('source[data-src]');
+                const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+                const shouldSkipVideo = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                    || window.innerWidth < 768
+                    || connection?.saveData;
+
+                const loadVideo = () => {
+                    if (!heroVideo || !videoSource || videoSource.src) {
+                        return;
+                    }
+
+                    videoSource.src = videoSource.dataset.src;
+                    heroVideo.load();
+                    heroVideo.play().catch(() => {});
+                };
+
+                if (!shouldSkipVideo && heroVideo && heroSection) {
+                    if ('IntersectionObserver' in window) {
+                        const observer = new IntersectionObserver((entries) => {
+                            entries.forEach((entry) => {
+                                if (entry.isIntersecting) {
+                                    loadVideo();
+                                    observer.disconnect();
+                                }
+                            });
+                        }, { threshold: 0.15 });
+
+                        observer.observe(heroSection);
+                    } else {
+                        loadVideo();
+                    }
+                }
+
+                const hidePreloader = () => {
+                    if (!preloader || preloader.classList.contains('is-hidden')) {
+                        return;
+                    }
+
+                    preloader.classList.add('is-hidden');
+                    document.body.classList.remove('landing-loading');
+                    preloader.addEventListener('transitionend', () => preloader.remove(), { once: true });
+                };
+
+                window.addEventListener('load', () => {
+                    window.setTimeout(hidePreloader, 250);
+                }, { once: true });
+
+                window.setTimeout(hidePreloader, 5000);
+            })();
+        </script>
     </body>
 </html>
