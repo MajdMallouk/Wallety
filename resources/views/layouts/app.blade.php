@@ -111,12 +111,6 @@
         <main class="max-w-7xl mx-auto px-2 py-4 sm:p-6 lg:p-8 dark:text-white">
             {{ $slot }}
         </main>
-
-        <div class="flex place-content-center pt-20 pb-5">
-            <button class="text-sm bg-base-bgLight dark:bg-base-bg hover:bg-gray-50 dark:hover:bg-gray-800 text-neutral-900 dark:text-white px-4 py-2 rounded-lg shadow">
-                Report a Problem
-            </button>
-        </div>
     </div>
 
     <!-- Scripts -->

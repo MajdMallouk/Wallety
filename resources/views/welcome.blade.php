@@ -448,7 +448,7 @@
         </div>
     </x-section>
     <footer class="bg-base-dark py-6">
-        <p class="text-center">All right reserved &copy;Be Happy Be Dumb 2025</p>
+        <p class="text-center">All right reserved &copy;Be Happy Be Dumb 2026</p>
     </footer>
         @if (Route::has('login'))
             <div class="h-14.5 hidden lg:block"></div>
